@@ -1,4 +1,4 @@
 package com.app.moviesapp.repository
 
-interface MovieRepository {
+interface MovieRepository  {
 }
