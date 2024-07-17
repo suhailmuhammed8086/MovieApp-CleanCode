@@ -1,6 +1,7 @@
 package com.app.moviesapp.ui.activity.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -18,8 +19,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import com.app.moviesapp.R
+import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.ui.theme.MoviesAppTheme
 import com.app.moviesapp.ui.theme.poppinsFont
+import com.app.moviesapp.utils.log
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -33,6 +36,23 @@ class HomeActivity : ComponentActivity() {
                 Home(appName = getString(R.string.app_name))
             }
         }
+
+        // Test API CALL
+        viewModel.discoverMovieResponse.state.observe(this){
+            Log.e("TAG", "onCreate: $it",)
+            when(it) {
+                is ResponseState.Failed -> {
+                    it.error.log("Error")
+                }
+                ResponseState.Loading -> {}
+                is ResponseState.Success -> {}
+                is ResponseState.ValidationError -> {
+
+                }
+            }
+        }
+
+        viewModel.getDiscoverMovies()
     }
 }
 

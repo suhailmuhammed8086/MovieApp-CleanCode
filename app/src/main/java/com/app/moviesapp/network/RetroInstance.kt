@@ -19,6 +19,13 @@ object RetroInstance {
                     addInterceptor(loggingInterceptor)
                 }
             }
+            .addInterceptor {chain ->
+                val request =chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTlmZGUwNDI5YjQzOWQxMzk3NWZiOGRmZDUzMWJjMCIsIm5iZiI6MTcyMTIyMjAzOC4yNTcwNDYsInN1YiI6IjY2OGJlYTQzYjA3MTY0ZWQyMzk4YzkyNyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VU99XSZodv4_qedlnlt5aWC6UIXTWJ4ErnVOwN6LwdM")
+                    .build()
+
+                chain.proceed(request)
+            }
             .build()
 
 

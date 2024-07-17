@@ -28,7 +28,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String","BaseUrl","\"https://api.themoviedb.org/3\"")
+            buildConfigField("String","BaseUrl","\"https://api.themoviedb.org/3/\"")
             //example : http://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg
             buildConfigField("String","FileUrl","\"http://image.tmdb.org/t/p/\"")
             isDebuggable = true
@@ -39,7 +39,7 @@ android {
         }
         release {
             isMinifyEnabled = false
-            buildConfigField("String","BaseUrl","\"https://api.themoviedb.org/3\"")
+            buildConfigField("String","BaseUrl","\"https://api.themoviedb.org/3/\"")
             buildConfigField("String","FileUrl","\"http://image.tmdb.org/t/p/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
