@@ -18,7 +18,6 @@
         <activity
             android:name=".ui.activity.home.HomeActivity"
             android:exported="true"
-            android:label="@string/title_activity_home"
             android:theme="@style/Theme.MoviesApp.Splash" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

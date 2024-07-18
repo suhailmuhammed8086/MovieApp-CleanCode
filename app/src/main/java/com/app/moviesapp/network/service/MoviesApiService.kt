@@ -1,7 +1,6 @@
 package com.app.moviesapp.network.service
 
 import com.app.moviesapp.network.model.response.DiscoverMoviesListResponse
-import kotlinx.coroutines.Deferred
 import retrofit2.http.GET
 
 interface MoviesApiService {

@@ -12,6 +12,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val movieRepository: MovieRepository
 ): ViewModel() {
+
     val discoverMovieResponse = OperationsStateHandler<DiscoverMoviesListResponse>(viewModelScope)
 
     fun getDiscoverMovies() {

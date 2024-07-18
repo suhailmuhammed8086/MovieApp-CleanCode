@@ -11,7 +11,7 @@ class MovieRepositoryImpl @Inject constructor(
     private val movieDataSource: MovieDataSource
 ) : MovieRepository {
     override suspend fun getDiscoverMoviesList(): ResponseState<DiscoverMoviesListResponse> {
-        return withContext(Dispatchers.Main) {
+        return withContext(Dispatchers.IO) {
             return@withContext movieDataSource.getDiscoverMoviesList()
         }
     }

@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,14 +40,22 @@ class HomeActivity : ComponentActivity() {
 
         // Test API CALL
         viewModel.discoverMovieResponse.state.observe(this){
-            Log.e("TAG", "onCreate: $it",)
-            when(it) {
+            Log.e("TAG", "onCreate: $it")
+            when (it) {
                 is ResponseState.Failed -> {
                     it.error.log("Error")
                 }
-                ResponseState.Loading -> {}
-                is ResponseState.Success -> {}
+
+                ResponseState.Loading -> {
+
+                }
+                is ResponseState.Success -> {
+
+                }
                 is ResponseState.ValidationError -> {
+
+                }
+                ResponseState.Cancelled -> {
 
                 }
             }
@@ -63,6 +72,7 @@ fun Home(appName: String) {
         Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
+            .alpha(0f)
         ,
     ) {
         Text(text = appName,
