@@ -1,6 +1,8 @@
 package com.app.moviesapp.data
 
-class ValidationErrorException : Exception{
+import okio.IOException
+
+class ValidationErrorException : IOException{
     var errorCode: Int = -1
     constructor(errorCode: Int, ) : super(){
         this.errorCode = errorCode

@@ -50,10 +50,10 @@ class HomeActivity : ComponentActivity() {
 
                 }
                 is ResponseState.Success -> {
-
+                    it.response.log("response")
                 }
                 is ResponseState.ValidationError -> {
-
+                    it.error.log("Validation error")
                 }
                 ResponseState.Cancelled -> {
 
