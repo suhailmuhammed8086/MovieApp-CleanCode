@@ -1,7 +1,12 @@
 package com.app.moviesapp.network
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import com.app.moviesapp.BuildConfig
-import com.app.moviesapp.data.ValidationErrorException
+import com.app.moviesapp.data.NoNetworkException
+import com.app.moviesapp.network.utils.NetworkInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -9,8 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 object RetroInstance {
-    fun getInstance(): Retrofit {
-
+    fun getInstance(context: Context): Retrofit {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 
@@ -20,15 +24,7 @@ object RetroInstance {
                     addInterceptor(loggingInterceptor)
                 }
             }
-            .addInterceptor {chain ->
-                val request =chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTlmZGUwNDI5YjQzOWQxMzk3NWZiOGRmZDUzMWJjMCIsIm5iZiI6MTcyMTIyMjAzOC4yNTcwNDYsInN1YiI6IjY2OGJlYTQzYjA3MTY0ZWQyMzk4YzkyNyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VU99XSZodv4_qedlnlt5aWC6UIXTWJ4ErnVOwN6LwdM")
-                    .build()
-                if (!isOnline()) {
-                    throw ValidationErrorException(1000, "No Internet connection")
-                }
-                chain.proceed(request)
-            }
+            .addInterceptor(NetworkInterceptor(context))
             .build()
 
 
@@ -43,8 +39,4 @@ object RetroInstance {
         return retrofit.create(service)
     }
 
-    private fun isOnline(): Boolean{
-        // TODO: Add online check logic here 
-        return true
-    }
 }

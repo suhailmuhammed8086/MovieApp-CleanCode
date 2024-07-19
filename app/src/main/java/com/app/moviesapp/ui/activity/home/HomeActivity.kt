@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +35,12 @@ class HomeActivity : ComponentActivity() {
         setContent {
             MoviesAppTheme {
                 // A surface container using the 'background' color from the theme
-                Home(appName = getString(R.string.app_name))
+//                Home(appName = getString(R.string.app_name))
+                Button(onClick = {
+                    viewModel.discoverMovieResponse.retry()
+                }) {
+                    Text(text = "Retry")
+                }
             }
         }
 

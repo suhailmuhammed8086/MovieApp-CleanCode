@@ -1,6 +1,7 @@
 package com.app.moviesapp.tools
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.app.moviesapp.data.NoNetworkException
 import com.app.moviesapp.data.ValidationErrorException
 import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.states.ResponseState.Cancelled
@@ -23,20 +24,22 @@ class OperationsStateHandler<T>(
     private var action: (suspend()-> ResponseState<T>)? = null
     private var apiCallJob :Job? = null
     fun load(action: suspend () -> ResponseState<T>) {
+        _state.value = Loading
         this.action = action
         apiCallJob = scope.launch(Dispatchers.IO) {
             try {
-                _state.postValue(Loading)
                 val response = action()
                 _state.postValue(response)
             } catch (e: ValidationErrorException) {
-                _state.postValue(ValidationError(e.errorCode, e.message ?: "Validation Error"))
+                _state.postValue(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
             } catch (e: HttpException) {
-                _state.postValue(Failed(e.message(), e.code()))
+                _state.postValue(Failed(e.message?:MSG_SOMETHING_WENT_WRONG, e.code()))
             } catch (e: CancellationException) {
                 _state.postValue(Cancelled)
+            }catch (e: NoNetworkException){
+                _state.postValue(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
             } catch (e: Exception) {
-                _state.postValue(Failed(e.message ?: "Something went wrong", 100))
+                _state.postValue(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
             }
         }
     }
@@ -50,5 +53,12 @@ class OperationsStateHandler<T>(
     fun cancel() {
         apiCallJob?.cancel(CancellationException())
         apiCallJob = null
+    }
+
+
+    companion object {
+        const val MSG_SOMETHING_WENT_WRONG = "Something went wrong"
+        const val MSG_VALIDATION_ERROR = "Validation error"
+        const val MSG_NO_NETWORK = "No internet connection"
     }
 }

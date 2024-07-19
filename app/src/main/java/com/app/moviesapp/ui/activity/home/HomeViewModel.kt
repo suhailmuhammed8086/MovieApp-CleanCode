@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.moviesapp.network.model.response.DiscoverMoviesListResponse
 import com.app.moviesapp.repository.MovieRepository
 import com.app.moviesapp.tools.OperationsStateHandler
+import com.app.moviesapp.utils.log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
