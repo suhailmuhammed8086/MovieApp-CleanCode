@@ -6,6 +6,9 @@ import android.net.NetworkCapabilities
 import android.os.Build
 
 object NetworkUtils {
+
+    const val API_KEY = "api_key"
+
     fun isOnline(context: Context): Boolean{
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

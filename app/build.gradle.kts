@@ -31,6 +31,7 @@ android {
             buildConfigField("String","BaseUrl","\"https://api.themoviedb.org/3/\"")
             //example : http://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg
             buildConfigField("String","FileUrl","\"http://image.tmdb.org/t/p/\"")
+            buildConfigField("String","ApiKey","\"0a9fde0429b439d13975fb8dfd531bc0\"")
             isDebuggable = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -41,6 +42,7 @@ android {
             isMinifyEnabled = false
             buildConfigField("String","BaseUrl","\"https://api.themoviedb.org/3/\"")
             buildConfigField("String","FileUrl","\"http://image.tmdb.org/t/p/\"")
+            buildConfigField("String","ApiKey","\"0a9fde0429b439d13975fb8dfd531bc0\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -85,12 +87,19 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    //Retrofit
+    // Retrofit
     implementation(libs.retrofit)
     implementation(libs.gson)
     implementation(libs.logging.interceptor)
 
-    //Hilt
+    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+
+    // Coil
+    implementation(libs.coil.compose)
+
+    // Nav controller
+    implementation(libs.navigation.compose)
+
 }

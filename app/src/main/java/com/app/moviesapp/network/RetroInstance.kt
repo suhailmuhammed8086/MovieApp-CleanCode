@@ -1,11 +1,7 @@
 package com.app.moviesapp.network
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import com.app.moviesapp.BuildConfig
-import com.app.moviesapp.data.NoNetworkException
 import com.app.moviesapp.network.utils.NetworkInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -20,9 +16,7 @@ object RetroInstance {
 
         val client = OkHttpClient.Builder()
             .apply {
-                if (BuildConfig.DEBUG) {
-                    addInterceptor(loggingInterceptor)
-                }
+                if (BuildConfig.DEBUG) { addInterceptor(loggingInterceptor) }
             }
             .addInterceptor(NetworkInterceptor(context))
             .build()
