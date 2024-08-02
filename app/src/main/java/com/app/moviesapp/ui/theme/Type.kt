@@ -1,6 +1,7 @@
 package com.app.moviesapp.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -16,4 +17,11 @@ val poppinsFont = FontFamily(
     Font(R.font.poppins_regular, FontWeight.Normal),
     Font(R.font.poppins_light, FontWeight.Light),
     Font(R.font.poppins_thin, FontWeight.Thin),
+)
+
+val topBarTitleStyle = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 18.sp,
+    color = Color.White
 )

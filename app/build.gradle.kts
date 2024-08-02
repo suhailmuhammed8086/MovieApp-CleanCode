@@ -95,11 +95,17 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation ("com.google.dagger:hilt-android:2.49")
+    kapt ("com.google.dagger:hilt-android-compiler:2.49")
+//    implementation (libs.androidx.hilt.lifecycle.viewmodel)
+    kapt ("androidx.hilt:hilt-compiler:1.2.0")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Coil
     implementation(libs.coil.compose)
 
     // Nav controller
     implementation(libs.navigation.compose)
+//    implementation("androidx.compose.material3:material3-android:1.2.1")
 
 }

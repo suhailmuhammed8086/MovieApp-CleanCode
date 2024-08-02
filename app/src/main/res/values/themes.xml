@@ -3,6 +3,6 @@
 
     <style name="Theme.MoviesApp" parent="android:Theme.Material.Light.NoActionBar" />
     <style name="Theme.MoviesApp.Splash" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowFullscreen">true</item>
+
     </style>
 </resources>
