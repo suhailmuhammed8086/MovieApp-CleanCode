@@ -1,6 +1,4 @@
 package com.app.moviesapp.tools
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.app.moviesapp.data.NoNetworkException
 import com.app.moviesapp.data.ValidationErrorException
 import com.app.moviesapp.states.ResponseState
@@ -12,35 +10,43 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.util.concurrent.CancellationException
 
 class OperationsStateHandler<T>(
     private val scope: CoroutineScope,
+    private var stateUpdateCallback:suspend (state: ResponseState<T>)->Unit
 ) {
-    private val _state = MutableLiveData<ResponseState<T>>()
-    val state: LiveData<ResponseState<T>> = _state
+//    private val _state = MutableLiveData<ResponseState<T>>()
+//    val state: LiveData<ResponseState<T>> = _state
 
     private var action: (suspend()-> ResponseState<T>)? = null
     private var apiCallJob :Job? = null
     fun load(action: suspend () -> ResponseState<T>) {
-        _state.value = Loading
         this.action = action
         apiCallJob = scope.launch(Dispatchers.IO) {
+            stateUpdateCallback(Loading)
             try {
                 val response = action()
-                _state.postValue(response)
+                updateState(response)
             } catch (e: ValidationErrorException) {
-                _state.postValue(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
+                updateState(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
             } catch (e: HttpException) {
-                _state.postValue(Failed(e.message?:MSG_SOMETHING_WENT_WRONG, e.code()))
+                updateState(Failed(e.message?:MSG_SOMETHING_WENT_WRONG, e.code()))
             } catch (e: CancellationException) {
-                _state.postValue(Cancelled)
+                updateState(Cancelled)
             }catch (e: NoNetworkException){
-                _state.postValue(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
+                updateState(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
             } catch (e: Exception) {
-                _state.postValue(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
+                updateState(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
             }
+        }
+    }
+
+    private suspend fun updateState(state: ResponseState<T>){
+        withContext(Dispatchers.Main) {
+            stateUpdateCallback(state)
         }
     }
 
@@ -54,6 +60,7 @@ class OperationsStateHandler<T>(
         apiCallJob?.cancel(CancellationException())
         apiCallJob = null
     }
+
 
 
     companion object {

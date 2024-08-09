@@ -2,7 +2,9 @@
 <resources>
 
     <style name="Theme.MoviesApp" parent="android:Theme.Material.Light.NoActionBar" />
-    <style name="Theme.MoviesApp.Splash" parent="android:Theme.Material.Light.NoActionBar">
 
+    <style name="Theme.MoviesApp.Splash" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
     </style>
 </resources>

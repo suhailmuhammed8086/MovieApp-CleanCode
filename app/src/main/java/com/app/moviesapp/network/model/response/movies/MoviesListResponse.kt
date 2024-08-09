@@ -1,10 +1,10 @@
-package com.app.moviesapp.network.model.response
+package com.app.moviesapp.network.model.response.movies
 
 import com.google.gson.annotations.SerializedName
 
-data class DiscoverMoviesListResponse(
+data class MoviesListResponse(
     val page: Int,
-    val results: List<DiscoverMovieModel>,
+    val results: List<MovieModel>,
     @SerializedName("total_pages")
     val totalPages: Int,
     @SerializedName("total_results")
@@ -12,7 +12,7 @@ data class DiscoverMoviesListResponse(
 )
 
 
-data class DiscoverMovieModel(
+data class MovieModel(
     val id: Int,
     val title: String,
     val overview: String,

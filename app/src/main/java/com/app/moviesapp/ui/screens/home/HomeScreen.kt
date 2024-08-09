@@ -1,28 +1,19 @@
 package com.app.moviesapp.ui.screens.home
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -32,49 +23,51 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.Coil
-import coil.compose.AsyncImage
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.SubcomposeAsyncImage
 import com.app.moviesapp.R
-import com.app.moviesapp.network.model.response.DiscoverMovieModel
-import com.app.moviesapp.states.ResponseState
-import com.app.moviesapp.ui.activity.MainViewModel
-import com.app.moviesapp.ui.screens.home.BottomOption.Companion.OPTION_FAVS
-import com.app.moviesapp.ui.screens.home.BottomOption.Companion.OPTION_MOVIES
-import com.app.moviesapp.ui.screens.home.BottomOption.Companion.OPTION_TV_SHOWS
+import com.app.moviesapp.network.model.response.movies.MovieModel
+import com.app.moviesapp.ui.BottomBarScreens
+import com.app.moviesapp.ui.Screens
+import com.app.moviesapp.ui.activity.ui.theme.homeScreenIconSize
+import com.app.moviesapp.ui.screens.movie.home.MovieHomeScreen
+import com.app.moviesapp.ui.screens.movie.home.MovieHomeViewModel
+import com.app.moviesapp.ui.screens.tv.home.TvShowHomeScreen
 import com.app.moviesapp.ui.theme.poppinsFont
 import com.app.moviesapp.ui.theme.topBarTitleStyle
-import com.app.moviesapp.utils.log
+import com.app.moviesapp.ui.utils.VSpace
 
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: HomeScreenViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.getDiscoverMovies()
-    }
+    val bottomNavController = rememberNavController()
+
     Scaffold(
         modifier
             .fillMaxSize()
@@ -83,48 +76,43 @@ fun HomeScreen(
             TopBar(
                 title = LocalContext.current.getString(R.string.app_name),
                 onSearchClick = {
-
+                    navController.navigate(Screens.Search.route)
                 },
                 onSettingsClick = {
-
+                    navController.navigate(Screens.Settings.route)
                 }
             )
         },
-        content = {
-            HomeContent(it, viewModel)
+        content = {padValue->
+            NavHost(navController = bottomNavController, startDestination = BottomBarScreens.MovieList.route,){
+                composable(BottomBarScreens.MovieList.route,){
+                    MovieHomeScreen(paddingValues = padValue, navController = navController)
+                }
+                composable(BottomBarScreens.TvShowList.route){
+                    TvShowHomeScreen(paddingValues = padValue, navController = navController)
+                }
+                composable(BottomBarScreens.Favourites.route){
+                    DummyScreen(text = "Favorites \n Coming soon")
+                }
+            }
+
         },
         bottomBar = {
-            val options = listOf(
-                BottomOption(OPTION_MOVIES, "Movies", R.drawable.ic_movies),
-                BottomOption(OPTION_TV_SHOWS, "Tv Shows", R.drawable.ic_tv_shows),
-                BottomOption(OPTION_FAVS, "Favourites", R.drawable.ic_favourite)
-            )
+
             BottomBar(
-                options = options,
+                options = viewModel.options,
+                defaultSelection = viewModel.bottomBarSelectedOption.intValue,
                 onOptionClick = { option ->
-                    when (option.id) {
-                        OPTION_MOVIES -> {
-
-                        }
-
-                        OPTION_TV_SHOWS -> {
-
-                        }
-
-                        OPTION_FAVS -> {
-
-                        }
+                    bottomNavController.navigate(option.route){
+                        bottomNavController.popBackStack()
+                        launchSingleTop = true
                     }
+                    viewModel.bottomBarSelectedOption.intValue = option.id
                 }
             )
         }
     )
 
-}
-
-@Preview
-@Composable
-private fun Preview() {
 }
 
 @Composable
@@ -142,7 +130,7 @@ fun TopBar(title: String, onSearchClick: () -> Unit, onSettingsClick: () -> Unit
             contentDescription = "",
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .size(25.dp)
+                .size(homeScreenIconSize)
                 .clickable(onClick = onSearchClick)
         )
         Text(
@@ -158,58 +146,42 @@ fun TopBar(title: String, onSearchClick: () -> Unit, onSettingsClick: () -> Unit
             contentDescription = "",
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .size(25.dp)
+                .size(homeScreenIconSize)
                 .clickable(onClick = onSettingsClick)
         )
     }
 }
 
 
+
 @Composable
-fun HomeContent(paddingValues: PaddingValues, viewModel: MainViewModel) {
-    val state = viewModel.movieListResponseState.collectAsState().value
+fun ErrorText(modifier: Modifier = Modifier, errorText: String, errorTextColor: Color = Color.White, onRetry: (()->Unit)? = null) {
     Column(
-        Modifier
-            .fillMaxSize()
-            .padding(
-                top = paddingValues.calculateTopPadding(),
-                bottom = paddingValues.calculateBottomPadding()
-            )
-            .background(color = Color.Black)
-//            .verticalScroll(rememberScrollState())
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when (state) {
-            ResponseState.Cancelled -> {
-
-            }
-
-            is ResponseState.Failed -> {
-
-            }
-
-            ResponseState.Idle -> {
-
-            }
-
-            ResponseState.Loading -> {
-                Box(Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-            }
-
-            is ResponseState.Success -> {
-                state?.response?.results?.let { items ->
-                    LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                        items(items.size) {
-                            MovieItem(model = items[it])
-                        }
-                    }
-                }
-            }
-
-            is ResponseState.ValidationError -> {
-
-            }
+        Text(
+            text = errorText,
+            style = TextStyle(
+                fontFamily = poppinsFont,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                color = errorTextColor
+            )
+        )
+        if (onRetry != null) {
+            VSpace(space = 10.dp)
+            Text(
+                text = "Retry",
+                style = TextStyle(
+                    fontFamily = poppinsFont,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = errorTextColor
+                ),
+                modifier = Modifier
+                    .clickable(onClick = onRetry)
+            )
         }
     }
 }
@@ -217,17 +189,17 @@ fun HomeContent(paddingValues: PaddingValues, viewModel: MainViewModel) {
 data class BottomOption(
     val id: Int,
     val name: String,
-    val icon: Int
+    val icon: Int,
+    val route: String
 ) {
-    companion object {
-        const val OPTION_MOVIES = 1
-        const val OPTION_TV_SHOWS = 2
-        const val OPTION_FAVS = 3
-    }
+
 }
 
 @Composable
-fun BottomBar(options: List<BottomOption>, onOptionClick: (option: BottomOption) -> Unit) {
+fun BottomBar(options: List<BottomOption>,defaultSelection: Int, onOptionClick: (option: BottomOption) -> Unit) {
+    var selectedOptionId by remember {
+        mutableIntStateOf(defaultSelection)
+    }
     Row(
         Modifier
             .defaultMinSize(150.dp)
@@ -240,84 +212,60 @@ fun BottomBar(options: List<BottomOption>, onOptionClick: (option: BottomOption)
         options.forEach { option ->
             Icon(
                 painter = painterResource(id = option.icon),
-                tint = Color.White,
+                tint = if (option.id == selectedOptionId) Color.White else Color.Gray,
                 contentDescription = option.name,
                 modifier = Modifier
                     .padding(20.dp)
-                    .size(25.dp)
-                    .clickable(onClick = { onOptionClick(option) })
+                    .size(homeScreenIconSize)
+                    .clickable(
+                        onClick = {
+                            selectedOptionId = option.id
+                            onOptionClick(option)
+                        }, enabled = selectedOptionId != option.id
+                    )
             )
         }
     }
 }
 
 @Composable
-fun MovieRow(model: DiscoverMovieModel) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-    ) {
-        MovieItem(
-            Modifier
-                .weight(.5f)
-                .padding(start = 10.dp, end = 5.dp, top = 10.dp), model
-        )
-        MovieItem(
-            Modifier
-                .weight(.5f)
-                .padding(start = 5.dp, end = 10.dp, top = 10.dp), model
-        )
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun MovieItem(modifier: Modifier = Modifier, model: DiscoverMovieModel) {
-    var isPosterImage by remember {
-        mutableStateOf(true)
-    }
+fun MovieItem(modifier: Modifier = Modifier, model: MovieModel, onMovieItemClick: (item: MovieModel)-> Unit) {
     Box(
         modifier = modifier
-            .aspectRatio(2f / 4f)
             .padding(start = 10.dp, end = 5.dp, top = 10.dp)
             .background(color = Color.DarkGray, shape = RoundedCornerShape(2))
+            .clickable { onMovieItemClick(model) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
             SubcomposeAsyncImage(
-                model = "http://image.tmdb.org/t/p/w500/${
-                    if (isPosterImage) {
-                        model.posterPath
-                    } else {
-                        model.backDropPath
-                    }
-                }",
+                model = "http://image.tmdb.org/t/p/w500/${model.posterPath}",
                 contentDescription = "",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(.75f)
-                    .combinedClickable(
-                        onClick = {},
-                        onLongClick = {
-                            isPosterImage = !isPosterImage
-                        }
-                    ),
+                    .aspectRatio(2f / 3f),
                 loading = {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(10.dp)
+                    )
                 }
             )
             Column() {
                 Text(
                     text = model.title,
                     Modifier.padding(horizontal = 5.dp, 2.dp),
+                    minLines = 2,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     style = TextStyle(
                         color = Color.White,
                         fontFamily = poppinsFont,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
                     )
                 )
             }
@@ -346,49 +294,26 @@ fun MovieItem(modifier: Modifier = Modifier, model: DiscoverMovieModel) {
     }
 }
 
+
 @Composable
-fun SearchBar() {
-    var text: String by remember { mutableStateOf("") }
-    var showHint: Boolean by remember { mutableStateOf(true) }
-
-    val textStyle = TextStyle(
-        color = Color.Black,
-        fontFamily = poppinsFont,
-        fontWeight = FontWeight.Normal,
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(5.dp))
-            .padding(start = 15.dp, end = 10.dp)
-            .defaultMinSize(minHeight = 52.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        BasicTextField(
-            value = text,
-            onValueChange = {
-                text = it
-            },
-            textStyle = textStyle,
+fun DummyScreen(text: String) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black)
+    ){
+        Text(
+            text = text,
+            style = TextStyle(
+                color = Color.White,
+                fontFamily = poppinsFont,
+                fontWeight = FontWeight.Medium,
+                fontSize = 12.sp,
+            ),
+            textAlign = TextAlign.Center,
             modifier = Modifier
-                .onFocusChanged {
-                    showHint = !it.hasFocus
-                }
-                .fillMaxWidth()
-
+                .align(Alignment.Center)
 
         )
-
-        if (showHint && text.isEmpty()) {
-            Text(
-                text = "Hint Text",
-                Modifier.align(Alignment.CenterStart),
-                style = textStyle.copy(
-                    color = Color.Gray
-                ),
-            )
-        }
     }
 
 }

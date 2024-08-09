@@ -3,7 +3,7 @@ package com.app.moviesapp.di
 
 import android.content.Context
 import com.app.moviesapp.network.RetroInstance
-import com.app.moviesapp.network.service.MoviesApiService
+import com.app.moviesapp.network.service.MoviesAndTvShowsApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,8 +24,8 @@ class Module {
 
     @Singleton
     @Provides
-    fun provideApiService(retrofit: Retrofit): MoviesApiService {
-        return RetroInstance.createService(retrofit, MoviesApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): MoviesAndTvShowsApiService {
+        return RetroInstance.createService(retrofit, MoviesAndTvShowsApiService::class.java)
     }
 
 }
