@@ -5,13 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
@@ -38,9 +43,12 @@ import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.app.moviesapp.network.model.response.movies.MovieModel
 import com.app.moviesapp.states.ResponseState
-import com.app.moviesapp.ui.Screens
+import com.app.moviesapp.ui.composes.GenreCompose
+import com.app.moviesapp.ui.composes.GenreShimmerCompose
+import com.app.moviesapp.ui.composes.ListItemCompose
 import com.app.moviesapp.ui.screens.home.ErrorText
 import com.app.moviesapp.ui.theme.poppinsFont
+import com.app.moviesapp.ui.utils.VSpace
 
 
 @Composable
@@ -54,6 +62,7 @@ fun MovieHomeScreen(
     }
 
     val state by viewModel.movieListResponseState.collectAsState()
+    val genreListState by viewModel.movieGenreListResponseState.collectAsState()
     var parentWidth by remember {
         mutableIntStateOf(0)
     }
@@ -70,6 +79,35 @@ fun MovieHomeScreen(
             }
 //            .verticalScroll(rememberScrollState())
     ) {
+        VSpace(space = 10.dp)
+        ResponseState.HandleComposeState(responseState = genreListState,
+            onLoading = {
+                Row () {
+                    (0..5).forEach { _ ->
+                        GenreShimmerCompose(
+                            modifier = Modifier
+                                .padding(start = 10.dp)
+                        )
+                    }
+                }
+            },
+            onSuccess = {response->
+                if (response != null) {
+                    LazyRow {
+                        items(response.genres) {
+                            GenreCompose(
+                                modifier = Modifier
+                                    .padding(start = 10.dp),
+                                genreId = it.id,
+                                name = it.name,
+                                onClick = {}
+                                )
+                        }
+                    }
+                }
+            }
+        )
+
         ResponseState.HandleComposeState(state,
             onLoading = {
                 Box(Modifier.fillMaxSize()) {
@@ -79,15 +117,22 @@ fun MovieHomeScreen(
                     )
                 }
             },
-
             onSuccess = { response->
                 val singleCellWidth = 500
                 val count = (parentWidth/singleCellWidth).coerceAtLeast(2)
                 response?.results?.let { items ->
                     LazyVerticalGrid(columns = GridCells.Fixed(count)) {
                         items(items.size) {
-                            MovieItem(model = items[it]) {
-                                navController.navigate(Screens.Detail.route)
+                            with(items[it]){
+                                ListItemCompose(
+                                    uniqueId = id,
+                                    title = title,
+                                    imagePath = posterPath ?: backDropPath,
+                                    rating = voteAvg,
+                                    onItemClick = {
+
+                                    }
+                                )
                             }
                         }
                     }
@@ -100,7 +145,7 @@ fun MovieHomeScreen(
                             .align(Alignment.Center),
                         errorText = error,
                         onRetry = {
-                            viewModel.discoverMovieResponse2.retry()
+                            viewModel.discoverMovieApiTask.retry()
                         }
                     )
                 }
@@ -129,7 +174,14 @@ fun MovieItem(modifier: Modifier = Modifier, model: MovieModel, onMovieItemClick
                     .fillMaxWidth()
                     .aspectRatio(2f / 3f),
                 loading = {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .width(10.dp)
+                            .height(10.dp),
+
+                        color = Color.White
+                    )
                 }
             )
             Column() {

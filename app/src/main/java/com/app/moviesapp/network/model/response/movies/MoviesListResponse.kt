@@ -23,7 +23,7 @@ data class MovieModel(
     @SerializedName("release_date")
     val releaseDate: String,
     @SerializedName("poster_path")
-    val posterPath: String,
+    val posterPath: String?,
     @SerializedName("backdrop_path")
-    val backDropPath: String
+    val backDropPath: String?
 )

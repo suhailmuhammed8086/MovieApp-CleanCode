@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +42,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.app.moviesapp.network.model.response.tv_shows.TvShowModel
 import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.ui.Screens
+import com.app.moviesapp.ui.composes.ListItemCompose
 import com.app.moviesapp.ui.screens.home.ErrorText
 import com.app.moviesapp.ui.theme.poppinsFont
 
@@ -86,8 +90,16 @@ fun TvShowHomeScreen(
                 response?.results?.let { items ->
                     LazyVerticalGrid(columns = GridCells.Fixed(count)) {
                         items(items.size) {
-                            TvShowItem(model = items[it]) {
-                                navController.navigate(Screens.Detail.route)
+                            with(items[it]){
+                                ListItemCompose(
+                                    uniqueId = id,
+                                    title = name,
+                                    imagePath = posterPath ?: backDropPath,
+                                    rating = voteAvg,
+                                    onItemClick = {
+
+                                    }
+                                )
                             }
                         }
                     }
@@ -108,67 +120,3 @@ fun TvShowHomeScreen(
         )
     }
 }
-
-@Composable
-fun TvShowItem(modifier: Modifier = Modifier, model: TvShowModel, onTvShowItemClick: (item: TvShowModel)-> Unit) {
-    Box(
-        modifier = modifier
-            .padding(start = 10.dp, end = 5.dp, top = 10.dp)
-            .background(color = Color.DarkGray, shape = RoundedCornerShape(2))
-            .clickable { onTvShowItemClick(model) }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            SubcomposeAsyncImage(
-                model = "http://image.tmdb.org/t/p/w500/${model.posterPath}",
-                contentDescription = "",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(2f / 3f),
-                loading = {
-                    CircularProgressIndicator()
-                }
-            )
-            Column() {
-                Text(
-                    text = model.name,
-                    Modifier.padding(horizontal = 5.dp, 2.dp),
-                    minLines = 2,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(
-                        color = Color.White,
-                        fontFamily = poppinsFont,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                    )
-                )
-            }
-        }
-
-        Surface(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(10.dp, 10.dp),
-            color = Color.Gray,
-            shape = RoundedCornerShape(100)
-        ) {
-            Text(
-                text = String.format("%.1f", model.voteAvg),
-                Modifier.padding(horizontal = 7.dp),
-                style = TextStyle(
-                    color = Color.White,
-                    fontFamily = poppinsFont,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp
-                )
-            )
-        }
-
-
-    }
-}
-
