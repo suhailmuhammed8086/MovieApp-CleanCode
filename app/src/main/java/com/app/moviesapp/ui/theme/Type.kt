@@ -25,3 +25,46 @@ val topBarTitleStyle = TextStyle(
     fontSize = 18.sp,
     color = Color.White
 )
+
+val h1Title = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 18.sp,
+    color = Color.White
+)
+val h2Title = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    color = Color.White
+)
+val h3Title = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 14.sp,
+    color = Color.White
+)
+val h4Title = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.Medium,
+    fontSize = 13.sp,
+    color = Color.White
+)
+val h5Title = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.Normal,
+    fontSize = 12.sp,
+    color = Color.White
+)
+val mediumContent = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.Normal,
+    fontSize = 13.sp,
+    color = Color.White
+)
+val regularContent = TextStyle(
+    fontFamily = poppinsFont,
+    fontWeight = FontWeight.Normal,
+    fontSize = 13.sp,
+    color = Color.White
+)

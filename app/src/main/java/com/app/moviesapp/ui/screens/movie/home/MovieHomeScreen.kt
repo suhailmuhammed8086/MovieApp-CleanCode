@@ -1,28 +1,23 @@
 package com.app.moviesapp.ui.screens.movie.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,24 +26,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.SubcomposeAsyncImage
-import com.app.moviesapp.network.model.response.movies.MovieModel
+import com.app.moviesapp.network.model.response.movies.MoviesListResponse
 import com.app.moviesapp.states.ResponseState
+import com.app.moviesapp.ui.Screens
+import com.app.moviesapp.ui.composes.BoxWrapper
+import com.app.moviesapp.ui.composes.ErrorText
 import com.app.moviesapp.ui.composes.GenreCompose
-import com.app.moviesapp.ui.composes.GenreShimmerCompose
-import com.app.moviesapp.ui.composes.ListItemCompose
-import com.app.moviesapp.ui.screens.home.ErrorText
-import com.app.moviesapp.ui.theme.poppinsFont
+import com.app.moviesapp.ui.composes.HorizontalListItemCompose
+import com.app.moviesapp.ui.screens.movie.list.MovieListViewModel
+import com.app.moviesapp.ui.theme.Black
+import com.app.moviesapp.ui.theme.Gold
+import com.app.moviesapp.ui.theme.Grey
+import com.app.moviesapp.ui.theme.h2Title
+import com.app.moviesapp.ui.theme.h3Title
 import com.app.moviesapp.ui.utils.VSpace
+import com.app.moviesapp.utils.withArgs
+import com.app.moviesapp.utils.constants.ArgKeys
 
 
 @Composable
@@ -57,15 +55,27 @@ fun MovieHomeScreen(
     viewModel: MovieHomeViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.getDiscoverMovies()
+
+    fun openMovieDetailScreen(movieId: Long) {
+        navController.navigate(
+            Screens.Detail.withArgs()
+                .addArg(ArgKeys.MOVIE_ID, movieId)
+                .route()
+        )
     }
 
-    val state by viewModel.movieListResponseState.collectAsState()
-    val genreListState by viewModel.movieGenreListResponseState.collectAsState()
-    var parentWidth by remember {
-        mutableIntStateOf(0)
+    fun openMovieListScreen(type: MovieListViewModel.PageType, title: String){
+        navController.navigate(Screens.MovieList.withArgs()
+            .addArg(ArgKeys.MOVIE_PAGE_TYPE, type)
+            .addArg(ArgKeys.PAGE_TITLE, title)
+            .route()
+        )
     }
+
+    val state by viewModel.movieHomeScreenState.collectAsState()
+    var parentWidth by remember { mutableIntStateOf(0) }
+
+
     Column(
         Modifier
             .fillMaxSize()
@@ -73,154 +83,204 @@ fun MovieHomeScreen(
                 top = paddingValues.calculateTopPadding(),
                 bottom = paddingValues.calculateBottomPadding()
             )
-            .background(color = Color.Black)
+            .background(Black)
             .onSizeChanged {
                 parentWidth = it.width
             }
-//            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState())
     ) {
         VSpace(space = 10.dp)
-        ResponseState.HandleComposeState(responseState = genreListState,
-            onLoading = {
-                Row () {
-                    (0..5).forEach { _ ->
-                        GenreShimmerCompose(
-                            modifier = Modifier
-                                .padding(start = 10.dp)
-                        )
-                    }
-                }
-            },
-            onSuccess = {response->
+        ResponseState.HandleComposeState(
+            responseState = state.genreApiState,
+            onSuccess = { response ->
                 if (response != null) {
                     LazyRow {
-                        items(response.genres) {
+                        items(response.genres) { genere ->
                             GenreCompose(
-                                modifier = Modifier
-                                    .padding(start = 10.dp),
-                                genreId = it.id,
-                                name = it.name,
-                                onClick = {}
-                                )
-                        }
-                    }
-                }
-            }
-        )
-
-        ResponseState.HandleComposeState(state,
-            onLoading = {
-                Box(Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = Color.White
-                    )
-                }
-            },
-            onSuccess = { response->
-                val singleCellWidth = 500
-                val count = (parentWidth/singleCellWidth).coerceAtLeast(2)
-                response?.results?.let { items ->
-                    LazyVerticalGrid(columns = GridCells.Fixed(count)) {
-                        items(items.size) {
-                            with(items[it]){
-                                ListItemCompose(
-                                    uniqueId = id,
-                                    title = title,
-                                    imagePath = posterPath ?: backDropPath,
-                                    rating = voteAvg,
-                                    onItemClick = {
-
-                                    }
+                                modifier = Modifier.padding(start = 10.dp),
+                                genreId = genere.id, name = genere.name
+                            ) {
+                                // on Genre Item click
+                                navController.navigate(
+                                    Screens.MovieList.withArgs()
+                                        .addArg(ArgKeys.MOVIE_PAGE_TYPE, MovieListViewModel.PageType.GENRE_WISE)
+                                        .addArg(ArgKeys.PAGE_TITLE,genere.name)
+                                        .addArg(ArgKeys.GENRE_ID, genere.id)
+                                        .route()
                                 )
                             }
                         }
                     }
                 }
-            },
-            onFailed = { error, errorCode ->
-                Box(modifier = Modifier.fillMaxSize()) {
-                    ErrorText(
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        errorText = error,
-                        onRetry = {
-                            viewModel.discoverMovieApiTask.retry()
-                        }
-                    )
-                }
+
             }
         )
+        VSpace(space = 10.dp)
+        // Now playing
+        BoxWrapper(
+            insetPadding = 0.dp
+        ) {
+            MovieListTileCompose(
+                tileTitle = "Now Playing",
+                state = state.nowPlayingMoviesApiState,
+                onMovieItemClick = ::openMovieDetailScreen,
+                onViewAllClick = {
+                    openMovieListScreen(MovieListViewModel.PageType.NOW_PLAYING, "Now Playing")
+
+                },
+                onRetry = viewModel.nowPlayingMoviesApiCall::retry
+
+            )
+        }
+        VSpace(space = 10.dp)
+
+        // Popular Movies
+        BoxWrapper(
+            insetPadding = 0.dp
+        ) {
+            MovieListTileCompose(
+                tileTitle = "Popular",
+                state = state.popularMoviesApiState,
+                onMovieItemClick = ::openMovieDetailScreen,
+                onViewAllClick = {
+                    openMovieListScreen(MovieListViewModel.PageType.POPULAR, "Popular")
+                },
+                onRetry = viewModel.popularMoviesApiCall::retry
+            )
+        }
+        VSpace(space = 10.dp)
+
+        // Top rated
+        BoxWrapper(
+            insetPadding = 0.dp
+        ) {
+            MovieListTileCompose(
+                tileTitle = "Top Rated",
+                state = state.topRatedMoviesApiState,
+                onMovieItemClick = ::openMovieDetailScreen,
+                onViewAllClick = {
+                    openMovieListScreen(MovieListViewModel.PageType.TOP_RATED, "Top Rated")
+
+                },
+                onRetry = viewModel.topRatedMoviesApiCall::retry
+            )
+        }
+        VSpace(space = 10.dp)
+        // Up coming movies
+        BoxWrapper(
+            insetPadding = 0.dp
+        ) {
+            MovieListTileCompose(
+                tileTitle = "Up coming",
+                state = state.upComingMoviesApiState,
+                onMovieItemClick = ::openMovieDetailScreen,
+                onViewAllClick = {
+                    openMovieListScreen(MovieListViewModel.PageType.UP_COMING, "Up coming")
+
+                },
+                onRetry = viewModel.upComingMoviesApiCall::retry
+            )
+        }
+        VSpace(space = 10.dp)
     }
 }
 
 @Composable
-fun MovieItem(modifier: Modifier = Modifier, model: MovieModel, onMovieItemClick: (item: MovieModel)-> Unit) {
-    Box(
-        modifier = modifier
-            .padding(start = 10.dp, end = 5.dp, top = 10.dp)
-            .background(color = Color.DarkGray, shape = RoundedCornerShape(2))
-            .clickable { onMovieItemClick(model) }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            SubcomposeAsyncImage(
-                model = "http://image.tmdb.org/t/p/w500/${model.posterPath}",
-                contentDescription = "",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(2f / 3f),
-                loading = {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .width(10.dp)
-                            .height(10.dp),
+fun MovieListTileCompose(
+    modifier: Modifier = Modifier,
+    tileTitle: String,
+    state: ResponseState<MoviesListResponse>,
+    onViewAllClick: () -> Unit = {},
+    onMovieItemClick: (movieId: Long) -> Unit,
+    onRetry: () -> Unit
+) {
+    Column(
+        modifier
+            .fillMaxWidth()
 
-                        color = Color.White
-                    )
-                }
+    ) {
+        VSpace(space = 10.dp)
+        Row(
+            modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // TileTitle
+            Text(
+                text = tileTitle,
+                style = h2Title
+                    .copy(color = Gold)
             )
-            Column() {
+
+            // ViewMore button
+            TextButton(onClick = onViewAllClick) {
                 Text(
-                    text = model.title,
-                    Modifier.padding(horizontal = 5.dp, 2.dp),
-                    minLines = 2,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(
-                        color = Color.White,
-                        fontFamily = poppinsFont,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                    )
+                    text = "View more",
+                    style = h3Title
+                        .copy(
+                            color = Grey,
+                            fontWeight = FontWeight.Medium
+                        )
                 )
             }
         }
 
-        Surface(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(10.dp, 10.dp),
-            color = Color.Gray,
-            shape = RoundedCornerShape(100)
-        ) {
-            Text(
-                text = String.format("%.1f", model.voteAvg),
-                Modifier.padding(horizontal = 7.dp),
-                style = TextStyle(
-                    color = Color.White,
-                    fontFamily = poppinsFont,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp
-                )
-            )
-        }
+        ResponseState.HandleComposeState(
+            responseState = state,
+            onLoading = {
+                Box(
+                    modifier =
+                    Modifier
+                        .height(200.dp)
+                        .fillMaxWidth()
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        color = Color.White,
+                    )
+                }
+            },
+            onSuccess = { response ->
+                val movieList = response?.results ?: emptyList()
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    items(movieList.size) {
+                        with(movieList[it]) {
+                            HorizontalListItemCompose(
+                                modifier = Modifier
+                                    .padding(start = if (it == 0) 10.dp else 0.dp),
+                                uniqueId = id,
+                                title = this.title,
+                                imagePath = this.posterPath,
+                                rating = this.voteAvg,
+                                onItemClick = onMovieItemClick
+                            )
+                        }
 
-
+                    }
+                }
+            },
+            onFailed = { error, errorCode ->
+                Box(
+                    modifier = Modifier
+                        .height(200.dp)
+                        .fillMaxWidth()
+                ) {
+                    ErrorText(
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        errorText = error,
+                        onRetry = onRetry
+                    )
+                }
+            }
+        )
+        VSpace(space = 10.dp)
     }
-}
 
+}

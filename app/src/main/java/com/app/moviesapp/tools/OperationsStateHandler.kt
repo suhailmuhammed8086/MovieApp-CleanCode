@@ -43,6 +43,26 @@ class OperationsStateHandler<T>(
             }
         }
     }
+    suspend fun loadSuspend(action: suspend () -> ResponseState<T>) {
+        this.action = action
+        withContext(Dispatchers.IO) {
+            stateUpdateCallback(Loading)
+            try {
+                val response = action()
+                updateState(response)
+            } catch (e: ValidationErrorException) {
+                updateState(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
+            } catch (e: HttpException) {
+                updateState(Failed(e.message?:MSG_SOMETHING_WENT_WRONG, e.code()))
+            } catch (e: CancellationException) {
+                updateState(Cancelled)
+            }catch (e: NoNetworkException){
+                updateState(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
+            } catch (e: Exception) {
+                updateState(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
+            }
+        }
+    }
 
     private suspend fun updateState(state: ResponseState<T>){
         withContext(Dispatchers.Main) {

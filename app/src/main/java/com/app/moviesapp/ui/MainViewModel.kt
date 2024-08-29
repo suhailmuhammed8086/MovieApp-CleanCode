@@ -1,4 +1,4 @@
-package com.app.moviesapp.ui.activity
+package com.app.moviesapp.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -10,6 +10,17 @@ sealed class ResponseState<out T> {
     class Failed(val error: String, val errorCode: Int) : ResponseState<Nothing>()
     data object Cancelled : ResponseState<Nothing>()
 
+    open fun isSuccess(): Boolean{
+        return this is Success
+    }
+
+    open fun getSuccessResponse() : T? {
+        if (this is Success){
+            return response
+        }
+        return null
+    }
+
     companion object {
         @Composable
         fun <R> HandleComposeState(

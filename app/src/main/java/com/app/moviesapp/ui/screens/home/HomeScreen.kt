@@ -37,11 +37,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -51,13 +49,13 @@ import com.app.moviesapp.R
 import com.app.moviesapp.network.model.response.movies.MovieModel
 import com.app.moviesapp.ui.BottomBarScreens
 import com.app.moviesapp.ui.Screens
-import com.app.moviesapp.ui.activity.ui.theme.homeScreenIconSize
 import com.app.moviesapp.ui.screens.movie.home.MovieHomeScreen
-import com.app.moviesapp.ui.screens.movie.home.MovieHomeViewModel
 import com.app.moviesapp.ui.screens.tv.home.TvShowHomeScreen
+import com.app.moviesapp.ui.theme.h1Title
+import com.app.moviesapp.ui.theme.homeScreenIconSize
 import com.app.moviesapp.ui.theme.poppinsFont
-import com.app.moviesapp.ui.theme.topBarTitleStyle
 import com.app.moviesapp.ui.utils.VSpace
+import com.app.moviesapp.utils.ImageLoader
 
 
 @Composable
@@ -74,7 +72,7 @@ fun HomeScreen(
             .background(color = Color.Black),
         topBar = {
             TopBar(
-                title = LocalContext.current.getString(R.string.app_name),
+                title = "",
                 onSearchClick = {
                     navController.navigate(Screens.Search.route)
                 },
@@ -135,7 +133,7 @@ fun TopBar(title: String, onSearchClick: () -> Unit, onSettingsClick: () -> Unit
         )
         Text(
             text = title,
-            style = topBarTitleStyle,
+            style = h1Title,
             modifier = Modifier
                 .align(Alignment.Center),
             onTextLayout = {}
@@ -154,37 +152,6 @@ fun TopBar(title: String, onSearchClick: () -> Unit, onSettingsClick: () -> Unit
 
 
 
-@Composable
-fun ErrorText(modifier: Modifier = Modifier, errorText: String, errorTextColor: Color = Color.White, onRetry: (()->Unit)? = null) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = errorText,
-            style = TextStyle(
-                fontFamily = poppinsFont,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
-                color = errorTextColor
-            )
-        )
-        if (onRetry != null) {
-            VSpace(space = 10.dp)
-            Text(
-                text = "Retry",
-                style = TextStyle(
-                    fontFamily = poppinsFont,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp,
-                    color = errorTextColor
-                ),
-                modifier = Modifier
-                    .clickable(onClick = onRetry)
-            )
-        }
-    }
-}
 
 data class BottomOption(
     val id: Int,
@@ -241,7 +208,8 @@ fun MovieItem(modifier: Modifier = Modifier, model: MovieModel, onMovieItemClick
                 .fillMaxSize()
         ) {
             SubcomposeAsyncImage(
-                model = "http://image.tmdb.org/t/p/w500/${model.posterPath}",
+//                model = ImageLoader.getUrl(model.posterPath?:""),
+                model = ImageLoader(model.posterPath?:""),
                 contentDescription = "",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier

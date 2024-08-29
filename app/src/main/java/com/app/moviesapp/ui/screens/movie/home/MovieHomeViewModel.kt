@@ -8,8 +8,11 @@ import com.app.moviesapp.repository.movie.MovieRepository
 import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.tools.OperationsStateHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,24 +20,48 @@ class MovieHomeViewModel @Inject constructor(
     private val movieRepository: MovieRepository
 ): ViewModel() {
 
-    val discoverMovieApiTask = OperationsStateHandler(viewModelScope){
-        _movieListResponseState.value = it
-    }
-    val movieGenreListApiTask = OperationsStateHandler(viewModelScope){
-        _movieGenreListResponseState.value = it
-    }
-    private val _movieListResponseState = MutableStateFlow<ResponseState<MoviesListResponse>>(ResponseState.Idle)
-    val movieListResponseState = _movieListResponseState.asStateFlow()
 
-    private val _movieGenreListResponseState = MutableStateFlow<ResponseState<GenreListResponse>>(ResponseState.Idle)
-    val movieGenreListResponseState = _movieGenreListResponseState.asStateFlow()
+    val genreApiCall = OperationsStateHandler(viewModelScope){responseState->
+        _movieHomeScreenState.update { it.copy(genreApiState = responseState) }
+    }
+    val nowPlayingMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        _movieHomeScreenState.update { it.copy(nowPlayingMoviesApiState = responseState) }
+    }
+    val popularMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        _movieHomeScreenState.update { it.copy(popularMoviesApiState = responseState) }
+    }
+    val topRatedMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        _movieHomeScreenState.update { it.copy(topRatedMoviesApiState = responseState) }
+    }
+    val upComingMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        _movieHomeScreenState.update { it.copy(upComingMoviesApiState = responseState) }
+    }
 
-    fun getDiscoverMovies() {
-//        discoverMovieApiTask.load {
-//            movieRepository.getDiscoverMoviesList()
-//        }
-        movieGenreListApiTask.load {
-            movieRepository.getMovieGenreList()
+    private val _movieHomeScreenState = MutableStateFlow(MovieHomeState())
+    val movieHomeScreenState = _movieHomeScreenState.asStateFlow()
+
+
+
+    init {
+        loadData()
+    }
+
+    fun loadData() {
+        viewModelScope.launch (Dispatchers.IO){
+            genreApiCall.loadSuspend(movieRepository::getMovieGenreList)
+            nowPlayingMoviesApiCall.loadSuspend (movieRepository::getNowPlayingMovies)
+            popularMoviesApiCall.loadSuspend (movieRepository::getPopularMovies)
+            topRatedMoviesApiCall.loadSuspend (movieRepository::getTopRatedMovies)
+            upComingMoviesApiCall.loadSuspend (movieRepository::getUpComingMovies)
         }
+
     }
+
+    data class MovieHomeState(
+        var genreApiState: ResponseState<GenreListResponse> = ResponseState.Idle,
+        var nowPlayingMoviesApiState: ResponseState<MoviesListResponse> = ResponseState.Idle,
+        var popularMoviesApiState: ResponseState<MoviesListResponse> = ResponseState.Idle,
+        var topRatedMoviesApiState: ResponseState<MoviesListResponse> = ResponseState.Idle,
+        var upComingMoviesApiState: ResponseState<MoviesListResponse> = ResponseState.Idle
+    )
 }

@@ -13,7 +13,7 @@ data class MoviesListResponse(
 
 
 data class MovieModel(
-    val id: Int,
+    val id: Long,
     val title: String,
     val overview: String,
     @SerializedName("vote_average")

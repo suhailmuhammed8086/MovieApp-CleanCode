@@ -13,7 +13,7 @@ data class TvShowListResponse(
 
 
 data class TvShowModel(
-    val id: Int,
+    val id: Long,
     val name: String,
     val overview: String,
     @SerializedName("vote_average")

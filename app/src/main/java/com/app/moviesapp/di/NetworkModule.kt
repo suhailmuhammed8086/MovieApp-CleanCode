@@ -28,4 +28,10 @@ class Module {
         return RetroInstance.createService(retrofit, MoviesAndTvShowsApiService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideName(): String {
+        return "Asta"
+    }
+
 }
