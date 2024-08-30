@@ -48,17 +48,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.app.moviesapp.R
+import com.app.moviesapp.network.model.response.movies.GenreModel
 import com.app.moviesapp.network.model.response.movies.MovieDetailsResponse
 import com.app.moviesapp.network.model.response.movies.MovieImagesResponse
 import com.app.moviesapp.states.ResponseState
+import com.app.moviesapp.ui.Screens
 import com.app.moviesapp.ui.composes.BoxWrapper
 import com.app.moviesapp.ui.composes.ErrorText
 import com.app.moviesapp.ui.composes.GenreCompose
+import com.app.moviesapp.ui.screens.movie.list.MovieListViewModel
 import com.app.moviesapp.ui.theme.Black
 import com.app.moviesapp.ui.theme.DetailsScreenTopBarIconSize
 import com.app.moviesapp.ui.theme.Gold
 import com.app.moviesapp.ui.theme.GreyBlack
 import com.app.moviesapp.ui.theme.ListItemBoxRatio
+import com.app.moviesapp.ui.theme.TopBarMinHeight
 import com.app.moviesapp.ui.theme.h1Title
 import com.app.moviesapp.ui.theme.h3Title
 import com.app.moviesapp.ui.theme.homeScreenIconSize
@@ -66,7 +70,9 @@ import com.app.moviesapp.ui.theme.mediumContent
 import com.app.moviesapp.ui.theme.regularContent
 import com.app.moviesapp.ui.utils.VSpace
 import com.app.moviesapp.utils.ImageLoader
+import com.app.moviesapp.utils.constants.ArgKeys
 import com.app.moviesapp.utils.log
+import com.app.moviesapp.utils.withArgs
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -100,6 +106,7 @@ fun MovieDetailsScreen(
         Box(
             modifier = Modifier
                 .background(Color.Black)
+                .padding(top = TopBarMinHeight)
                 .fillMaxSize()
         ) {
 
@@ -124,7 +131,16 @@ fun MovieDetailsScreen(
                         ContentScreen(
                             movieDetails = response,
                             movieImages = state.movieImagesResponse,
-                            onImageLoadFailed = viewModel.movieImagesApiCall::retry
+                            onImageLoadFailed = viewModel.movieImagesApiCall::retry,
+                            onGenreClick = { genre ->
+                                navController.navigate(
+                                    Screens.MovieList.withArgs()
+                                        .addArg(ArgKeys.MOVIE_PAGE_TYPE, MovieListViewModel.PageType.GENRE_WISE)
+                                        .addArg(ArgKeys.PAGE_TITLE, genre.name)
+                                        .addArg(ArgKeys.GENRE_ID, genre.id)
+                                        .route()
+                                )
+                            }
                         )
                     }
                 },
@@ -155,7 +171,7 @@ fun MovieDetailsTopBar(
 ) {
     Row(
         modifier = Modifier
-            .defaultMinSize(minHeight = 70.dp)
+            .defaultMinSize(minHeight = TopBarMinHeight)
             .fillMaxWidth()
 //            .background(color = GreyBlack.copy(alpha = 0.8f))
             .padding(horizontal = 15.dp),
@@ -186,7 +202,12 @@ fun MovieDetailsTopBar(
 }
 
 @Composable
-fun ContentScreen(movieDetails: MovieDetailsResponse, movieImages: ResponseState<MovieImagesResponse>, onImageLoadFailed:()-> Unit) {
+fun ContentScreen(
+    movieDetails: MovieDetailsResponse,
+    movieImages: ResponseState<MovieImagesResponse>,
+    onImageLoadFailed: () -> Unit,
+    onGenreClick: (genre: GenreModel) -> Unit
+) {
     val contentHorizontalPadding = 15.dp
     Box(
         modifier = Modifier
@@ -212,13 +233,7 @@ fun ContentScreen(movieDetails: MovieDetailsResponse, movieImages: ResponseState
                 .verticalScroll(rememberScrollState())
                 .background(Color.Black.copy(alpha = 0.8f))
         ) {
-            // Transparent box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1070f / 400f)
-            ) {}
-
+            VSpace(space = 20.dp)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -241,7 +256,10 @@ fun ContentScreen(movieDetails: MovieDetailsResponse, movieImages: ResponseState
                                     start = if (it == 0) contentHorizontalPadding else 0.dp,
                                     end = 5.dp
                                 ),
-                            genreId = genre.id, name = genre.name, onClick = {})
+                            genreId = genre.id,
+                            name = genre.name,
+                            onClick = { onGenreClick(genre) }
+                        )
                     }
                 }
                 VSpace(space = 10.dp)
@@ -261,7 +279,7 @@ fun ContentScreen(movieDetails: MovieDetailsResponse, movieImages: ResponseState
                     responseState = movieImages,
                     onSuccess = { images->
                         VSpace(space = 15.dp)
-                        Text(text = "Images", style = h3Title)
+                        Text(text = "Images", style = h3Title, modifier = Modifier.padding(start = contentHorizontalPadding))
                         VSpace(space = 10.dp)
                         if (images != null) {
                             // Posters

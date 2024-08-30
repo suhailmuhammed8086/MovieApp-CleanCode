@@ -274,28 +274,6 @@ fun VerticalDetailedListItem(
 
                     }
                 )
-                // Rating
-                if (rating != null) {
-                    Surface(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(10.dp, 10.dp),
-                        color = Color.Gray.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(100)
-                    ) {
-                        Text(
-                            text = String.format("%.1f", rating),
-                            Modifier.padding(horizontal = 7.dp),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontFamily = poppinsFont,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 15.sp
-                            )
-                        )
-                    }
-                }
-
             }
 
 
@@ -307,18 +285,46 @@ fun VerticalDetailedListItem(
                     .fillMaxHeight()
             ) {
                 VSpace(space = 10.dp)
+                // Title
                 Text(
                     text = title,
-                    Modifier.padding(horizontal = 5.dp),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     style = h2Title
                 )
+
+
+                // Rating
+                if (rating != null) {
+                    VSpace(space = 5.dp)
+                    Row (
+                        modifier = Modifier
+                            .padding( vertical = 0.5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text(
+                            text = String.format("%.1f", rating),
+                            style = TextStyle(
+                                color = White,
+                                fontFamily = poppinsFont,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 12.sp
+                            )
+                        )
+                        HSpace(space = 2.dp)
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "",
+                            tint = Gold,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
                 VSpace(space = 5.dp)
+                // OverView
                 Text(
                     text = overView,
-                    Modifier.padding(horizontal = 5.dp),
-                    maxLines = 2,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     style = mediumContent
                 )

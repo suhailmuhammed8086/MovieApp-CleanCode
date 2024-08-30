@@ -6,9 +6,11 @@ import com.app.moviesapp.states.ResponseState.Cancelled
 import com.app.moviesapp.states.ResponseState.Failed
 import com.app.moviesapp.states.ResponseState.Loading
 import com.app.moviesapp.states.ResponseState.ValidationError
+import com.app.moviesapp.utils.log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -16,58 +18,49 @@ import java.util.concurrent.CancellationException
 
 class OperationsStateHandler<T>(
     private val scope: CoroutineScope,
-    private var stateUpdateCallback:suspend (state: ResponseState<T>)->Unit
+    private var stateUpdateCallback: (state: ResponseState<T>) -> Unit
 ) {
-//    private val _state = MutableLiveData<ResponseState<T>>()
-//    val state: LiveData<ResponseState<T>> = _state
-
-    private var action: (suspend()-> ResponseState<T>)? = null
-    private var apiCallJob :Job? = null
+    private var action: (suspend () -> ResponseState<T>)? = null
+    private var apiCallJob: Job? = null
     fun load(action: suspend () -> ResponseState<T>) {
         this.action = action
         apiCallJob = scope.launch(Dispatchers.IO) {
-            stateUpdateCallback(Loading)
             try {
+                stateUpdateCallback(Loading)
                 val response = action()
                 updateState(response)
-            } catch (e: ValidationErrorException) {
-                updateState(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
-            } catch (e: HttpException) {
-                updateState(Failed(e.message?:MSG_SOMETHING_WENT_WRONG, e.code()))
-            } catch (e: CancellationException) {
-                updateState(Cancelled)
-            }catch (e: NoNetworkException){
-                updateState(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
             } catch (e: Exception) {
-                updateState(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
+               e.printStackTrace()
+               handleExceptionAndUpdateState(e)
             }
         }
     }
     suspend fun loadSuspend(action: suspend () -> ResponseState<T>) {
         this.action = action
-        withContext(Dispatchers.IO) {
-            stateUpdateCallback(Loading)
-            try {
+        apiCallJob = Job()
+        try {
+            withContext(Dispatchers.IO + apiCallJob!!) {
+                stateUpdateCallback(Loading)
                 val response = action()
                 updateState(response)
-            } catch (e: ValidationErrorException) {
-                updateState(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
-            } catch (e: HttpException) {
-                updateState(Failed(e.message?:MSG_SOMETHING_WENT_WRONG, e.code()))
-            } catch (e: CancellationException) {
-                updateState(Cancelled)
-            }catch (e: NoNetworkException){
-                updateState(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
-            } catch (e: Exception) {
-                updateState(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
             }
+        }catch (e: Exception) {
+            e.printStackTrace()
+            handleExceptionAndUpdateState(e)
         }
     }
 
-    private suspend fun updateState(state: ResponseState<T>){
-        withContext(Dispatchers.Main) {
-            stateUpdateCallback(state)
+    private fun handleExceptionAndUpdateState(e: Exception) {
+        when (e) {
+            is ValidationErrorException -> updateState(ValidationError(e.errorCode, e.message ?: MSG_VALIDATION_ERROR))
+            is HttpException -> updateState(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, e.code()))
+            is CancellationException -> updateState(Cancelled)
+            is NoNetworkException -> updateState(Failed(MSG_NO_NETWORK, NoNetworkException.NO_NETWORK_CONNECTION_ERROR_CODE))
+            else -> updateState(Failed(e.message ?: MSG_SOMETHING_WENT_WRONG, 100))
         }
+    }
+    private fun updateState(state: ResponseState<T>) {
+        stateUpdateCallback(state)
     }
 
     fun retry() {

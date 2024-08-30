@@ -33,7 +33,7 @@ sealed class ResponseState<out T> {
             onIdle:@Composable (() -> Unit)? = null,
         ) {
             when (responseState) {
-                Cancelled -> onCancelled?.invoke()
+                Cancelled -> onFailed?.invoke("Cancelled",22)
                 is Failed -> onFailed?.invoke(responseState.error, responseState.errorCode)
                 ResponseState.Idle -> onIdle?.invoke()
                 Loading -> onLoading?.invoke()

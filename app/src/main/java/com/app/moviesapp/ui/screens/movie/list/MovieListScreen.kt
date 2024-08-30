@@ -108,6 +108,7 @@ fun Content(
                                 title = it.title,
                                 imagePath = it.posterPath,
                                 backgroundImagePath = it.backDropPath,
+                                rating = it.voteAvg,
                                 overView = it.overview,
                                 releaseDate = it.releaseDate,
                                 onItemClick = onMovieItemClick

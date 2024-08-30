@@ -7,6 +7,7 @@ import com.app.moviesapp.network.model.response.movies.MoviesListResponse
 import com.app.moviesapp.repository.movie.MovieRepository
 import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.tools.OperationsStateHandler
+import com.app.moviesapp.utils.log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,15 +26,19 @@ class MovieHomeViewModel @Inject constructor(
         _movieHomeScreenState.update { it.copy(genreApiState = responseState) }
     }
     val nowPlayingMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        responseState.log("responseState1")
         _movieHomeScreenState.update { it.copy(nowPlayingMoviesApiState = responseState) }
     }
     val popularMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        responseState.log("responseState2")
         _movieHomeScreenState.update { it.copy(popularMoviesApiState = responseState) }
     }
     val topRatedMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        responseState.log("responseState3")
         _movieHomeScreenState.update { it.copy(topRatedMoviesApiState = responseState) }
     }
     val upComingMoviesApiCall = OperationsStateHandler(viewModelScope) { responseState ->
+        responseState.log("responseState4")
         _movieHomeScreenState.update { it.copy(upComingMoviesApiState = responseState) }
     }
 
