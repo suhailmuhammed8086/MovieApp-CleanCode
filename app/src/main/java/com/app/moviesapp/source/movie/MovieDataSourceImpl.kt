@@ -1,5 +1,6 @@
 package com.app.moviesapp.source.movie
 
+import com.app.moviesapp.network.model.response.CreditDetailsResponse
 import com.app.moviesapp.network.model.response.GenreListResponse
 import com.app.moviesapp.network.model.response.movies.MovieDetailsResponse
 import com.app.moviesapp.network.model.response.movies.MovieImagesResponse
@@ -49,5 +50,16 @@ class MovieDataSourceImpl @Inject constructor(
     override suspend fun getMovieImages(movieId: Long): ResponseState<MovieImagesResponse> {
         val response = movieApiService.getMovieImages(movieId)
         return ResponseState.Success(response)
+    }
+    override suspend fun getSimilarMovies(movieId: Long): ResponseState<MoviesListResponse> {
+        return ResponseState.Success(movieApiService.getSimilarMovies(movieId))
+    }
+
+    override suspend fun getRecommendedMovies(movieId: Long): ResponseState<MoviesListResponse> {
+        return ResponseState.Success(movieApiService.getRecommendMovies(movieId))
+    }
+
+    override suspend fun getMovieCredits(movieId: Long): ResponseState<CreditDetailsResponse> {
+        return ResponseState.Success(movieApiService.getMovieCredits(movieId))
     }
 }

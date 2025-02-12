@@ -1,6 +1,7 @@
 package com.app.moviesapp.repository.movie
 
 import com.app.moviesapp.network.model.request.DiscoverMoviesRequest
+import com.app.moviesapp.network.model.response.CreditDetailsResponse
 import com.app.moviesapp.network.model.response.GenreListResponse
 import com.app.moviesapp.network.model.response.movies.MovieDetailsResponse
 import com.app.moviesapp.network.model.response.movies.MovieImagesResponse
@@ -70,6 +71,24 @@ class MovieRepositoryImpl @Inject constructor(
     override suspend fun getMovieImages(movieId: Long): ResponseState<MovieImagesResponse> {
         return withContext(Dispatchers.IO) {
             return@withContext movieDataSource.getMovieImages(movieId)
+        }
+    }
+
+    override suspend fun getSimilarMovies(movieId: Long): ResponseState<MoviesListResponse> {
+        return withContext(Dispatchers.IO) {
+            return@withContext movieDataSource.getSimilarMovies(movieId)
+        }
+    }
+
+    override suspend fun getRecommendedMovies(movieId: Long): ResponseState<MoviesListResponse> {
+        return withContext(Dispatchers.IO) {
+            return@withContext movieDataSource.getRecommendedMovies(movieId)
+        }
+    }
+
+    override suspend fun getMovieCredits(movieId: Long): ResponseState<CreditDetailsResponse> {
+        return withContext(Dispatchers.IO) {
+            return@withContext movieDataSource.getMovieCredits(movieId)
         }
     }
 }

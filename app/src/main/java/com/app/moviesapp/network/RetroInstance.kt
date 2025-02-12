@@ -16,12 +16,10 @@ object RetroInstance {
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 
         val client = OkHttpClient.Builder()
-            .apply {
-                if (BuildConfig.DEBUG) { addInterceptor(loggingInterceptor) }
-            }
+            .apply { if (BuildConfig.DEBUG) { addInterceptor(loggingInterceptor) } }
             .addInterceptor(NetworkInterceptor(context))
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
             .build()
 
 

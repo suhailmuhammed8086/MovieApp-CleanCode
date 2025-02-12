@@ -68,8 +68,7 @@ fun HomeScreen(
 
     Scaffold(
         modifier
-            .fillMaxSize()
-            .background(color = Color.Black),
+            .fillMaxSize(),
         topBar = {
             TopBar(
                 title = "",
@@ -119,7 +118,6 @@ fun TopBar(title: String, onSearchClick: () -> Unit, onSettingsClick: () -> Unit
         modifier = Modifier
             .defaultMinSize(minHeight = 70.dp)
             .fillMaxWidth()
-            .background(color = Color.Black)
             .padding(horizontal = 15.dp)
     ) {
         Icon(
@@ -170,8 +168,7 @@ fun BottomBar(options: List<BottomOption>,defaultSelection: Int, onOptionClick: 
     Row(
         Modifier
             .defaultMinSize(150.dp)
-            .fillMaxWidth()
-            .background(color = Color.Black),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.Absolute.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {

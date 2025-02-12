@@ -3,6 +3,7 @@ package com.app.moviesapp.ui.screens.movie.list
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.moviesapp.data.ValidationErrorException
 import com.app.moviesapp.network.model.request.DiscoverMoviesRequest
 import com.app.moviesapp.network.model.response.movies.MoviesListResponse
 import com.app.moviesapp.repository.movie.MovieRepository
@@ -10,7 +11,6 @@ import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.tools.OperationsStateHandler
 import com.app.moviesapp.ui.screens.movie.list.MovieListViewModel.PageType.*
 import com.app.moviesapp.utils.constants.ArgKeys
-import com.app.moviesapp.utils.log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +24,7 @@ class MovieListViewModel @Inject constructor(
 ): ViewModel() {
 
     private var pageType: PageType = PageType.default
-    private var genreId: Int = -1
+    private var genreId: Long = -1
 
     val movieListApiCall = OperationsStateHandler(viewModelScope){ responseState->
         _movieListScreeState.update { it.copy(movieListApiState = responseState) }
@@ -41,11 +41,9 @@ class MovieListViewModel @Inject constructor(
                 movieListApiCall.load(movieRepository::getPopularMovies)
             }
             GENRE_WISE ->{
-                genreId = savedStateHandle.get<Int>(ArgKeys.GENRE_ID) ?: -1
+                genreId = savedStateHandle.get<Long>(ArgKeys.CONTENT_ID) ?: -1
                 movieListApiCall.load {
-                    movieRepository.getDiscoverMoviesList(DiscoverMoviesRequest(
-                        listOf(genreId)
-                    ))
+                    movieRepository.getDiscoverMoviesList(DiscoverMoviesRequest(listOf(genreId)))
                 }
             }
             NOW_PLAYING -> {
@@ -56,6 +54,24 @@ class MovieListViewModel @Inject constructor(
             }
             UP_COMING -> {
                 movieListApiCall.load(movieRepository::getUpComingMovies)
+            }
+            SIMILAR_MOVIES -> {
+                val movieId = savedStateHandle.get<Long>(ArgKeys.CONTENT_ID)
+                movieListApiCall.load{
+                    if (movieId == null){
+                        throw ValidationErrorException(1,"Invalid movie id.")
+                    }
+                    movieRepository.getSimilarMovies(movieId)
+                }
+            }
+            RECOMMENDED_MOVIES -> {
+                val movieId = savedStateHandle.get<Long>(ArgKeys.CONTENT_ID)
+                movieListApiCall.load {
+                    if (movieId == null) {
+                        throw ValidationErrorException(1, "Invalid movie id.")
+                    }
+                    movieRepository.getRecommendedMovies(movieId)
+                }
             }
         }
     }
@@ -69,7 +85,9 @@ class MovieListViewModel @Inject constructor(
         GENRE_WISE,
         NOW_PLAYING,
         TOP_RATED,
-        UP_COMING;
+        UP_COMING,
+        SIMILAR_MOVIES,
+        RECOMMENDED_MOVIES;
         companion object{
             val default = POPULAR
             fun parse(name: String?): PageType {
@@ -79,6 +97,8 @@ class MovieListViewModel @Inject constructor(
                     NOW_PLAYING.name -> NOW_PLAYING
                     TOP_RATED.name -> TOP_RATED
                     UP_COMING.name -> UP_COMING
+                    SIMILAR_MOVIES.name -> SIMILAR_MOVIES
+                    RECOMMENDED_MOVIES.name -> RECOMMENDED_MOVIES
                     else -> POPULAR
                 }
             }

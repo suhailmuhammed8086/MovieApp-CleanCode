@@ -60,8 +60,8 @@ class MainActivity : ComponentActivity() {
                                 type = NavType.StringType
                                 nullable = true
                             },
-                            navArgument(ArgKeys.GENRE_ID){
-                                type = NavType.IntType
+                            navArgument(ArgKeys.CONTENT_ID){
+                                type = NavType.LongType
                                 defaultValue = -1
                             }
                         )

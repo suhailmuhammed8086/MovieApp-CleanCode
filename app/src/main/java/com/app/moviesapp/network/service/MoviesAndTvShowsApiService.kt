@@ -1,5 +1,6 @@
 package com.app.moviesapp.network.service
 
+import com.app.moviesapp.network.model.response.CreditDetailsResponse
 import com.app.moviesapp.network.model.response.GenreListResponse
 import com.app.moviesapp.network.model.response.movies.MovieDetailsResponse
 import com.app.moviesapp.network.model.response.movies.MovieImagesResponse
@@ -35,6 +36,12 @@ interface MoviesAndTvShowsApiService {
     suspend fun getUpComingMovies(): MoviesListResponse
     @GET(URL_MOVIES_IMAGES)
     suspend fun getMovieImages(@Path(PARAM_MOVIE_ID) movieId: Long): MovieImagesResponse
+    @GET(URL_SIMILAR_MOVIES)
+    suspend fun getSimilarMovies(@Path(PARAM_MOVIE_ID) movieId: Long): MoviesListResponse
+    @GET(URL_RECOMMENDED_MOVIES)
+    suspend fun getRecommendMovies(@Path(PARAM_MOVIE_ID) movieId: Long): MoviesListResponse
+    @GET(URL_MOVIE_CREDITS)
+    suspend fun getMovieCredits(@Path(PARAM_MOVIE_ID) movieId: Long): CreditDetailsResponse
 
 
 
@@ -62,6 +69,10 @@ interface MoviesAndTvShowsApiService {
         private const val URL_MOVIES_TOP_RATED = "movie/top_rated"
         private const val URL_MOVIES_UP_COMING = "movie/upcoming"
         private const val URL_MOVIES_IMAGES = "movie/{$PARAM_MOVIE_ID}/images?language=en"
+        private const val URL_SIMILAR_MOVIES = "movie/{$PARAM_MOVIE_ID}/similar"
+        private const val URL_RECOMMENDED_MOVIES = "movie/{$PARAM_MOVIE_ID}/recommendations"
+        private const val URL_MOVIE_CREDITS = "movie/{$PARAM_MOVIE_ID}/credits"
+
 
         // TvShows
         private const val URL_DISCOVER_TV_SHOW_DETAILS= "tv/tvShowId"

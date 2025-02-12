@@ -19,12 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,24 +46,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.app.moviesapp.R
+import com.app.moviesapp.network.model.response.CreditDetailsResponse
 import com.app.moviesapp.network.model.response.movies.GenreModel
 import com.app.moviesapp.network.model.response.movies.MovieDetailsResponse
 import com.app.moviesapp.network.model.response.movies.MovieImagesResponse
+import com.app.moviesapp.network.model.response.movies.MoviesListResponse
 import com.app.moviesapp.states.ResponseState
 import com.app.moviesapp.ui.Screens
 import com.app.moviesapp.ui.composes.BoxWrapper
 import com.app.moviesapp.ui.composes.ErrorText
 import com.app.moviesapp.ui.composes.GenreCompose
+import com.app.moviesapp.ui.composes.MovieListTileCompose
 import com.app.moviesapp.ui.screens.movie.list.MovieListViewModel
 import com.app.moviesapp.ui.theme.Black
 import com.app.moviesapp.ui.theme.DetailsScreenTopBarIconSize
 import com.app.moviesapp.ui.theme.Gold
-import com.app.moviesapp.ui.theme.GreyBlack
 import com.app.moviesapp.ui.theme.ListItemBoxRatio
 import com.app.moviesapp.ui.theme.TopBarMinHeight
 import com.app.moviesapp.ui.theme.h1Title
 import com.app.moviesapp.ui.theme.h3Title
-import com.app.moviesapp.ui.theme.homeScreenIconSize
 import com.app.moviesapp.ui.theme.mediumContent
 import com.app.moviesapp.ui.theme.regularContent
 import com.app.moviesapp.ui.utils.VSpace
@@ -106,10 +105,8 @@ fun MovieDetailsScreen(
         Box(
             modifier = Modifier
                 .background(Color.Black)
-                .padding(top = TopBarMinHeight)
                 .fillMaxSize()
         ) {
-
             ResponseState.HandleComposeState(
                 responseState = state.movieDetailsResponse,
                 onLoading = {
@@ -131,13 +128,36 @@ fun MovieDetailsScreen(
                         ContentScreen(
                             movieDetails = response,
                             movieImages = state.movieImagesResponse,
-                            onImageLoadFailed = viewModel.movieImagesApiCall::retry,
+                            credits = state.movieCreditsResponse,
+                            similarMovies = state.similarMoviesResponse,
+                            recommendedMovies = state.recommendedMoviesResponse,
+                            onUiEvent = viewModel::onEvent,
                             onGenreClick = { genre ->
                                 navController.navigate(
                                     Screens.MovieList.withArgs()
                                         .addArg(ArgKeys.MOVIE_PAGE_TYPE, MovieListViewModel.PageType.GENRE_WISE)
                                         .addArg(ArgKeys.PAGE_TITLE, genre.name)
-                                        .addArg(ArgKeys.GENRE_ID, genre.id)
+                                        .addArg(ArgKeys.CONTENT_ID, genre.id)
+                                        .route()
+                                )
+                            },
+                            onMovieItemClick = {movieId->
+                                navController.navigate(
+                                    Screens.Detail.withArgs()
+                                        .addArg(ArgKeys.MOVIE_ID, movieId)
+                                        .route())
+                            },
+                            onViewAllClick = { pageType->
+                                val title = when (pageType) {
+                                    MovieListViewModel.PageType.RECOMMENDED_MOVIES -> "Recommended"
+                                    MovieListViewModel.PageType.SIMILAR_MOVIES -> "Similar"
+                                    else -> ""
+                                }
+                                navController.navigate(
+                                    Screens.MovieList.withArgs()
+                                        .addArg(ArgKeys.MOVIE_PAGE_TYPE, pageType)
+                                        .addArg(ArgKeys.PAGE_TITLE,title)
+                                        .addArg(ArgKeys.CONTENT_ID, viewModel.movieId)
                                         .route()
                                 )
                             }
@@ -153,7 +173,9 @@ fun MovieDetailsScreen(
                         ErrorText(
                             modifier = Modifier.align(Alignment.Center),
                             errorText = error,
-                            onRetry = viewModel.movieDetailsApiCall::retry
+                            onRetry = {
+                                viewModel.onEvent(MovieDetailsUiEvents.RefreshDetailsApi)
+                            }
                         )
                     }
                 }
@@ -169,34 +191,36 @@ fun MovieDetailsTopBar(
     onBackClick: () -> Unit,
     onWebViewClick:  ()-> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .defaultMinSize(minHeight = TopBarMinHeight)
-            .fillMaxWidth()
-//            .background(color = GreyBlack.copy(alpha = 0.8f))
-            .padding(horizontal = 15.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Back button
-        Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-            tint = Color.White,
-            contentDescription = "",
+    BoxWrapper {
+        Row(
             modifier = Modifier
-                .size(DetailsScreenTopBarIconSize)
-                .clickable(onClick = onBackClick)
-        )
-        // Web Icon
-        if (showWebIcon) {
-            Spacer(modifier = Modifier.weight(1f))
+                .defaultMinSize(minHeight = TopBarMinHeight)
+                .fillMaxWidth()
+//            .background(color = GreyBlack.copy(alpha = 0.8f))
+                .padding(horizontal = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Back button
             Icon(
-                painter = painterResource(id = R.drawable.ic_web),
+                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 tint = Color.White,
                 contentDescription = "",
                 modifier = Modifier
                     .size(DetailsScreenTopBarIconSize)
-                    .clickable(onClick = onWebViewClick)
+                    .clickable(onClick = onBackClick)
             )
+            // Web Icon
+            if (showWebIcon) {
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_web),
+                    tint = Color.White,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(DetailsScreenTopBarIconSize)
+                        .clickable(onClick = onWebViewClick)
+                )
+            }
         }
     }
 }
@@ -204,9 +228,14 @@ fun MovieDetailsTopBar(
 @Composable
 fun ContentScreen(
     movieDetails: MovieDetailsResponse,
+    credits: ResponseState<CreditDetailsResponse>,
     movieImages: ResponseState<MovieImagesResponse>,
-    onImageLoadFailed: () -> Unit,
-    onGenreClick: (genre: GenreModel) -> Unit
+    similarMovies: ResponseState<MoviesListResponse>,
+    recommendedMovies: ResponseState<MoviesListResponse>,
+    onUiEvent: (MovieDetailsUiEvents) -> Unit,
+    onGenreClick: (genre: GenreModel) -> Unit,
+    onMovieItemClick: (movieId: Long) -> Unit,
+    onViewAllClick: (type: MovieListViewModel.PageType) -> Unit,
 ) {
     val contentHorizontalPadding = 15.dp
     Box(
@@ -232,8 +261,9 @@ fun ContentScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .background(Color.Black.copy(alpha = 0.8f))
+                .padding(top = TopBarMinHeight)
         ) {
-            VSpace(space = 20.dp)
+            VSpace(space = 30.dp)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -315,11 +345,44 @@ fun ContentScreen(
                                 .padding(15.dp),
                             horizontalArrangement = Arrangement.Center
                         ){
-                            ErrorText(errorText = error, onRetry = onImageLoadFailed)
+                            ErrorText(errorText = error, onRetry = {
+                                onUiEvent(MovieDetailsUiEvents.RefreshImagesApi)
+                            })
                         }
                     }
                 )
+                
+                // Similar Movies
+                MovieListTileCompose(
+                    tileTitle = "Similar Movies",
+                    state = similarMovies,
+                    onMovieItemClick = { movieId ->
+                                       onMovieItemClick(movieId)
+                    },
+                    onViewAllClick = {
+                        onViewAllClick(MovieListViewModel.PageType.SIMILAR_MOVIES)
+                    },
+                    onRetry = {
+                        onUiEvent(MovieDetailsUiEvents.RefreshSimilarMoviesApi)
+                    }
+                ) 
+                VSpace(space = 15.dp)
+                // Recommended Movies
+                MovieListTileCompose(
+                    tileTitle = "Recommended Movies",
+                    state = recommendedMovies,
+                    onMovieItemClick = { movieId ->
+                        onMovieItemClick(movieId)
+                    },
+                    onViewAllClick = {
+                        onViewAllClick(MovieListViewModel.PageType.RECOMMENDED_MOVIES)
 
+                    },
+                    onRetry = {
+                        onUiEvent(MovieDetailsUiEvents.RefreshRecommendedMoviesApi)
+                    }
+                ) 
+   
             }
         }
     }

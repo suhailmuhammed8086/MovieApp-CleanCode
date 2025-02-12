@@ -25,6 +25,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.app.moviesapp.ui.theme.Black
 import com.app.moviesapp.ui.theme.Gold
+import com.app.moviesapp.ui.theme.Grey
 import com.app.moviesapp.ui.theme.GreyBlack
 import com.app.moviesapp.ui.theme.ListItemBoxRatio
 import com.app.moviesapp.ui.theme.ShimmerColor
@@ -71,21 +74,23 @@ fun GridListItemCompose(
                 .fillMaxSize()
         ) {
             SubcomposeAsyncImage(
-                model =  ImageLoader.getUrl(imagePath?:""),
+                model = ImageLoader.getUrl(imagePath ?: ""),
                 contentDescription = "",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(2f / 3f),
                 loading = {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .width(10.dp)
-                            .height(10.dp),
+                    Box(Modifier.fillMaxSize()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .width(10.dp)
+                                .height(10.dp),
 
-                        color = Color.White
-                    )
+                            color = Color.White
+                        )
+                    }
                 }
             )
             Column() {
@@ -127,6 +132,7 @@ fun GridListItemCompose(
         }
     }
 }
+
 @Composable
 fun HorizontalListItemCompose(
     modifier: Modifier = Modifier,
@@ -139,7 +145,7 @@ fun HorizontalListItemCompose(
     Box(
         modifier = modifier
             .padding(end = 15.dp, top = 10.dp)
-            .width(160.dp)
+            .width(120.dp)
             .aspectRatio(ListItemBoxRatio * .8f)
             .clickable { onItemClick(uniqueId) }
     ) {
@@ -155,17 +161,21 @@ fun HorizontalListItemCompose(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(ListItemBoxRatio)
-                    .background(color = Color.DarkGray, shape = RoundedCornerShape(2))
-                ,
+                    .background(color = Color.DarkGray, shape = RoundedCornerShape(2)),
                 loading = {
-                    CircularProgressIndicator(
+                    Box(
                         modifier = Modifier
-                            .width(10.dp)
-                            .height(10.dp)
-                            .align(Alignment.Center),
+                            .fillMaxSize()
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .width(10.dp)
+                                .height(10.dp)
+                                .align(Alignment.Center),
 
-                        color = Color.White
-                    )
+                            color = Color.White
+                        )
+                    }
                 }
             )
             Column() {
@@ -173,7 +183,7 @@ fun HorizontalListItemCompose(
                 VSpace(space = 10.dp)
                 Text(
                     text = title,
-                    Modifier.padding(vertical =  2.dp),
+                    Modifier.padding(vertical = 2.dp),
                     minLines = 2,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -192,11 +202,11 @@ fun HorizontalListItemCompose(
                 color = Black,
 //                shape = RoundedCornerShape(100)
             ) {
-                Row (
+                Row(
                     modifier = Modifier
                         .padding(horizontal = 3.dp, vertical = 0.5.dp),
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Text(
                         text = String.format("%.1f", rating),
                         style = TextStyle(
@@ -232,44 +242,42 @@ fun VerticalDetailedListItem(
     releaseDate: String,
     onItemClick: (id: Long) -> Unit
 ) {
-    Box (
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp)
             .clickable { onItemClick(uniqueId) }
-    ){
+    ) {
         // Background Image
         SubcomposeAsyncImage(
             model = ImageLoader.getUrl(backgroundImagePath ?: ""),
             contentDescription = "",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
-                .fillMaxSize()
-            ,
+                .fillMaxSize(),
             loading = {
 
             }
         )
 
         // Main Content
-        Row (
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Black.copy(alpha = .8f))
                 .padding(10.dp)
-        ){
+        ) {
             // Poster Image
-            Box (
+            Box(
                 modifier = modifier.fillMaxHeight()
-            ){
+            ) {
                 SubcomposeAsyncImage(
                     model = ImageLoader.getUrl(imagePath ?: ""),
                     contentDescription = "",
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier
                         .fillMaxHeight()
-                        .aspectRatio(ListItemBoxRatio)
-                    ,
+                        .aspectRatio(ListItemBoxRatio),
                     loading = {
 
                     }
@@ -297,11 +305,11 @@ fun VerticalDetailedListItem(
                 // Rating
                 if (rating != null) {
                     VSpace(space = 5.dp)
-                    Row (
+                    Row(
                         modifier = Modifier
-                            .padding( vertical = 0.5.dp),
+                            .padding(vertical = 0.5.dp),
                         verticalAlignment = Alignment.CenterVertically
-                    ){
+                    ) {
                         Text(
                             text = String.format("%.1f", rating),
                             style = TextStyle(
@@ -357,12 +365,14 @@ fun GenreCompose(
         )
     }
 }
+
 @Composable
 fun GenreShimmerCompose(
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier
-        .background(ShimmerColor, shape = RoundedCornerShape(10))
+    Box(
+        modifier = modifier
+            .background(ShimmerColor, shape = RoundedCornerShape(10))
     ) {
         Text(
             text = "",
@@ -388,8 +398,7 @@ fun ImagePagerItem(
     SubcomposeAsyncImage(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1070 / 600f)
-        ,
+            .aspectRatio(1070 / 600f),
         model = ImageLoader.getUrl(imagePath),
         contentDescription = "",
         onLoading = {
@@ -399,7 +408,12 @@ fun ImagePagerItem(
 }
 
 @Composable
-fun ErrorText(modifier: Modifier = Modifier, errorText: String, errorTextColor: Color = Color.White, onRetry: (()->Unit)? = null) {
+fun ErrorText(
+    modifier: Modifier = Modifier,
+    errorText: String,
+    errorTextColor: Color = Color.White,
+    onRetry: (() -> Unit)? = null
+) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -439,22 +453,73 @@ fun BoxWrapper(
 ) {
     Box(
         modifier = modifier
-            .background(GreyBlack.copy(alpha = 0.8f), shape = RoundedCornerShape(2))
+            .background(Black.copy(alpha = 0.5f), shape = RoundedCornerShape(2))
             .padding(insetPadding),
         content = content
     )
 }
 
+@Composable
+fun CrewAndCastCompose(
+    id: Long,
+    modifier: Modifier = Modifier,
+    name: String,
+    character: String,
+    imagePath: String,
+    onItemClick: (id: Long) -> Unit
+) {
+    Column(
+        modifier = modifier
+            .clickable { onItemClick(id) },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Image
+        SubcomposeAsyncImage(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(RoundedCornerShape(100)),
+            model = imagePath, contentDescription = "",
+            loading = {
+                Box(modifier.fillMaxSize()) {
+                    CircularProgressIndicator(
+                        modifier = modifier
+                            .align(Alignment.Center)
+                            .width(30.dp)
+                            .height(30.dp),
+                    )
+                }
+
+
+            }
+        )
+        VSpace(space = 2.dp)
+        // Name
+        Text(
+            text = name,
+            style = h3Title,
+            maxLines = 1
+
+        )
+        // Character
+        Text(
+            text = character,
+            style = mediumContent
+                .copy(
+                    fontSize = 12.sp,
+                    color = Grey
+                ),
+            maxLines = 1
+        )
+        VSpace(space = 5.dp)
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun Preview() {
-    VerticalDetailedListItem(
-        uniqueId = 1,
-        title = "Title",
-        imagePath = "",
-        backgroundImagePath = "",
-        rating = 4.5f,
-        overView = "over view".repeat(20),
-        releaseDate = "12-2-2222",
-        onItemClick = {})
+    Box(modifier = Modifier.background(Black)) {
+        CrewAndCastCompose(id = 1, name = "Asta", character = "Main", imagePath = "") {
+
+        }
+    }
 }

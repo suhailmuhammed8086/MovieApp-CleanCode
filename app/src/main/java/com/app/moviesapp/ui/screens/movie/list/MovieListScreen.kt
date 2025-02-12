@@ -88,6 +88,10 @@ fun Content(
             .padding(top = paddingValues.calculateTopPadding())
             .background(Black)
     ) {
+
+        val onFailed = {
+
+        }
         ResponseState.HandleComposeState(state.movieListApiState,
             onLoading = {
                 Box(Modifier.fillMaxSize()) {
@@ -118,6 +122,16 @@ fun Content(
                 }
             },
             onFailed = { error, errorCode ->
+                Box(modifier = Modifier.fillMaxSize()) {
+                    ErrorText(
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        errorText = error,
+                        onRetry = onRetryClick
+                    )
+                }
+            },
+            onValidationError = { error, errorCode ->
                 Box(modifier = Modifier.fillMaxSize()) {
                     ErrorText(
                         modifier = Modifier

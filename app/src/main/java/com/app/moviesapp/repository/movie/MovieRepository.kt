@@ -1,6 +1,7 @@
 package com.app.moviesapp.repository.movie
 
 import com.app.moviesapp.network.model.request.DiscoverMoviesRequest
+import com.app.moviesapp.network.model.response.CreditDetailsResponse
 import com.app.moviesapp.network.model.response.GenreListResponse
 import com.app.moviesapp.network.model.response.movies.MovieDetailsResponse
 import com.app.moviesapp.network.model.response.movies.MovieImagesResponse
@@ -17,5 +18,9 @@ interface MovieRepository  {
     suspend fun getTopRatedMovies(): ResponseState<MoviesListResponse>
     suspend fun getUpComingMovies(): ResponseState<MoviesListResponse>
     suspend fun getMovieImages(movieId: Long): ResponseState<MovieImagesResponse>
+    suspend fun getSimilarMovies(movieId: Long): ResponseState<MoviesListResponse>
+    suspend fun getRecommendedMovies(movieId: Long): ResponseState<MoviesListResponse>
+    suspend fun getMovieCredits(movieId: Long): ResponseState<CreditDetailsResponse>
+
 
 }
